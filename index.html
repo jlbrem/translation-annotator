@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Ranking Annotator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-language"></i> Translation Ranking Annotator</h1>
+            <p>Rank translation options from best to worst</p>
+            <div class="mode-switcher">
+                <button id="userModeBtn" class="mode-btn active">
+                    <i class="fas fa-user"></i> User Mode
+                </button>
+                <button id="ownerModeBtn" class="mode-btn">
+                    <i class="fas fa-cog"></i> Owner Mode
+                </button>
+            </div>
+        </header>
+
+        <!-- User Mode Section -->
+        <div class="upload-section" id="userModeSection">
+            <div class="upload-panel">
+                <h3><i class="fas fa-play"></i> Translation Annotation System</h3>
+                <p class="system-info">Complete 5 translation ranking tasks. Each session shows shuffled translation options to prevent bias.</p>
+                
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h4>No Translation Data Available</h4>
+                    <p>The owner needs to upload CSV data before you can start annotating.</p>
+                    <p>Please contact the system administrator or wait for data to be uploaded.</p>
+                </div>
+
+                <!-- Active State (hidden until CSV is loaded) -->
+                <div class="active-state" id="activeState" style="display: none;">
+                    <div class="progress-info" id="progressInfo">Loading...</div>
+                    <div class="session-info">
+                        <p><i class="fas fa-info-circle"></i> Complete all 5 sentences to submit your annotations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Owner Mode Section -->
+        <div class="upload-section" id="ownerModeSection" style="display: none;">
+            <div class="upload-panel">
+                <h3><i class="fas fa-download"></i> Owner Dashboard</h3>
+                <p class="system-info">Upload CSV data and manage the annotation system.</p>
+                
+                <!-- CSV Upload Section -->
+                <div class="csv-upload-section" id="csvUploadSection">
+                    <h4><i class="fas fa-upload"></i> Upload Translation Data</h4>
+                    <div class="file-upload">
+                        <input type="file" id="csvFileInput" accept=".csv" />
+                        <label for="csvFileInput" class="file-upload-label">
+                            <i class="fas fa-file-csv"></i>
+                            Choose CSV File
+                        </label>
+                        <p class="file-info">CSV format: First row = headers (ID, sentence, translation headers), remaining rows = data. Translation columns should have meaningful headers (e.g., "ES", "FR", "DE").</p>
+                    </div>
+                </div>
+
+                <!-- Dashboard Section (hidden until CSV is loaded) -->
+                <div class="dashboard-section" id="dashboardSection" style="display: none;">
+                    <div class="owner-stats" id="ownerStats">Loading statistics...</div>
+                    <div class="owner-controls">
+                        <button id="downloadAllAnnotations" class="btn btn-success">
+                            <i class="fas fa-download"></i> Download All Annotations
+                        </button>
+                        <button id="downloadCSV" class="btn btn-primary">
+                            <i class="fas fa-file-csv"></i> Download Original CSV
+                        </button>
+                        <button id="resetAllData" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Reset All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="annotation-panel" id="annotationPanel" style="display: none;">
+            <div class="sentence-navigation">
+                <button id="prevSentence" class="btn btn-secondary" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <div class="navigation-center">
+                    <span id="sentenceCounter">Sentence 1 of 1</span>
+                    <div id="completionStatus" class="completion-status">
+                        <span id="completionText">Complete all 5 sentences to submit</span>
+                        <div id="completionProgress" class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="nextSentence" class="btn btn-secondary" disabled>
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="source-text">
+                <h3>Source Text:</h3>
+                <div class="text-box" id="sourceText">
+                    <!-- Source text will be populated from CSV -->
+                </div>
+            </div>
+
+            <div class="translations-section">
+                <h3>Translation Options:</h3>
+                <div class="ranking-instructions">
+                    <h4><i class="fas fa-sort"></i> Ranking Instructions</h4>
+                    <p><strong>Drag and drop</strong> translations to rank them from <strong>best (top)</strong> to <strong>worst (bottom)</strong></p>
+                    <p>Blue drop zones will appear between items to show where you can place translations</p>
+                </div>
+                <div class="ranking-area" id="rankingArea">
+                    <!-- Translation options will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="addTranslation" class="btn btn-primary" style="display: none;">
+                    <i class="fas fa-plus"></i> Add Translation Option
+                </button>
+                <button id="clearRankings" class="btn btn-secondary" style="display: none;">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+                <button id="submitSession" class="btn btn-success" style="display: none;" disabled>
+                    <i class="fas fa-check"></i> Submit Session
+                </button>
+                <button id="exportData" class="btn btn-info" style="display: none;">
+                    <i class="fas fa-download"></i> Export Annotations
+                </button>
+            </div>
+
+            <div class="instructions">
+                <h4><i class="fas fa-info-circle"></i> Instructions:</h4>
+                <ul>
+                    <li>Drag and drop translation options to rank them from best (top) to worst (bottom)</li>
+                    <li>Complete all 5 sentences by interacting with each one</li>
+                    <li>Use navigation buttons to move between different source sentences</li>
+                    <li>Submit your rankings when all sentences are completed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="modal" id="editModal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Edit Translation</h3>
+                <textarea id="editTextarea" placeholder="Enter translation text..."></textarea>
+                <div class="modal-buttons">
+                    <button id="saveEdit" class="btn btn-primary">Save</button>
+                    <button id="cancelEdit" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
